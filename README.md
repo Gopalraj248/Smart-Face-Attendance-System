@@ -1,3 +1,4 @@
+![Gopal_101_11-36-59](https://github.com/user-attachments/assets/f8d447db-2d47-4c8f-baa8-0866c69acecf)
 # 📸 Smart Face Attendance System (Privacy-First V2.0)
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![License](https://img.shields.io/badge/License-MIT-green) ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
