@@ -18,13 +18,13 @@ ctk.set_default_color_theme("blue")
 MIN_MINUTES_BEFORE_EXIT = 1 
 EYE_ASPECT_RATIO_THRESHOLD = 0.30 
 EYE_ASPECT_RATIO_CONSEC_FRAMES = 2 
-FEEDBACK_DURATION = 40  # approx 2 sec
+FEEDBACK_DURATION = 40  # approx 2 seconds
 
 class FaceAttendanceApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Face Attendance (Clean UI)")
+        self.title("Face Attendance System")
         self.geometry("1100x700")
 
         self.grid_columnconfigure(0, weight=1)
@@ -55,7 +55,7 @@ class FaceAttendanceApp(ctk.CTk):
         self.lbl_register = ctk.CTkLabel(self.control_frame, text="Add New User", font=("Roboto", 16, "bold"))
         self.lbl_register.pack(pady=5)
 
-        self.entry_name = ctk.CTkEntry(self.control_frame, placeholder_text="Enter Name (e.g. Rahul)", width=250)
+        self.entry_name = ctk.CTkEntry(self.control_frame, placeholder_text="Enter Name (e.g. John)", width=250)
         self.entry_name.pack(pady=5)
 
         self.entry_id = ctk.CTkEntry(self.control_frame, placeholder_text="Enter Unique ID (e.g. 101)", width=250)
@@ -286,7 +286,7 @@ class FaceAttendanceApp(ctk.CTk):
                     self.blink_counter = 0 
             
             if self.is_real_person:
-                liveness_status = "Succssfull!"
+                liveness_status = "Verified!"
                 liveness_color = (0, 255, 0)
 
             facesCurFrame = face_recognition.face_locations(imgS)
@@ -321,16 +321,16 @@ class FaceAttendanceApp(ctk.CTk):
                                 disp_name = filename_base
                             box_color = (0, 255, 0)
                             
-                            # Sirf VERIFIED hone par Naam dikhao
+                            # SHOW NAME ONLY WHEN VERIFIED
                             cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
                             cv2.putText(frame, disp_name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 0.8, (255, 255, 255), 2)
                             
                             self.process_attendance(filename_base, frame)
                         else:
-                            # NOT VERIFIED: Sirf RED BOX dikhao, koi text nahi
+                            # NOT VERIFIED: Show only RED BOX, no text
                             box_color = (0, 0, 255)
                             cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
-                            # Yahan koi putText nahi hai -> Text Gayab!
+                            # No putText here -> Text Hidden!
                             self.status_label.configure(text=f"Waiting for Blink...", text_color="orange")
                     else:
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
