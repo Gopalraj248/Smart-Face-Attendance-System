@@ -8,7 +8,7 @@ import os
 import numpy as np
 from datetime import datetime
 import winsound
-from scipy.spatial import distance as dist # Math ke liye (zaroori hai)
+from scipy.spatial import distance as dist
 
 # --- CONFIGURATION ---
 ctk.set_appearance_mode("Dark")
@@ -16,15 +16,15 @@ ctk.set_default_color_theme("blue")
 
 # --- SETTINGS ---
 MIN_MINUTES_BEFORE_EXIT = 1 
-EYE_ASPECT_RATIO_THRESHOLD = 0.30 # Agar isse kam hua to aankh band hai
-EYE_ASPECT_RATIO_CONSEC_FRAMES = 2 # Kitne frames tak aankh band honi chahiye
+EYE_ASPECT_RATIO_THRESHOLD = 0.30 
+EYE_ASPECT_RATIO_CONSEC_FRAMES = 2 
 
 class FaceAttendanceApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Anti-Spoofing Face Attendance (Stable Version)")
-        self.geometry("1100x680")
+        self.title("Face Attendance System (With Unique ID)")
+        self.geometry("1100x700") # Increased height for new input box
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=0)
@@ -42,21 +42,28 @@ class FaceAttendanceApp(ctk.CTk):
         self.control_frame.grid(row=0, column=1, padx=15, pady=15, sticky="nsew")
 
         # Title
-        self.lbl_title = ctk.CTkLabel(self.control_frame, text="Secure Mode", font=("Roboto", 20, "bold"), text_color="#00E676")
+        self.lbl_title = ctk.CTkLabel(self.control_frame, text="Secure Attendance", font=("Roboto", 20, "bold"), text_color="#00E676")
         self.lbl_title.pack(pady=20)
 
         # Instructions
-        self.lbl_instruction = ctk.CTkLabel(self.control_frame, text="ℹ Please Blink to Verify", font=("Roboto", 14), text_color="cyan")
+        self.lbl_instruction = ctk.CTkLabel(self.control_frame, text="ℹ Blink to Verify", font=("Roboto", 14), text_color="cyan")
         self.lbl_instruction.pack(pady=5)
 
         self.divider = ctk.CTkFrame(self.control_frame, height=2, fg_color="gray")
         self.divider.pack(fill="x", padx=20, pady=15)
 
-        # Registration
+        # --- REGISTRATION SECTION (UPDATED) ---
         self.lbl_register = ctk.CTkLabel(self.control_frame, text="Add New User", font=("Roboto", 16, "bold"))
         self.lbl_register.pack(pady=5)
-        self.entry_name = ctk.CTkEntry(self.control_frame, placeholder_text="Enter Name", width=250)
+
+        # Name Input
+        self.entry_name = ctk.CTkEntry(self.control_frame, placeholder_text="Enter Name (e.g. Rahul)", width=250)
         self.entry_name.pack(pady=5)
+
+        # ID Input (NEW)
+        self.entry_id = ctk.CTkEntry(self.control_frame, placeholder_text="Enter Unique ID (e.g. 101)", width=250)
+        self.entry_id.pack(pady=5)
+
         self.btn_capture = ctk.CTkButton(self.control_frame, text="📸 Save Face", command=self.register_new_face, fg_color="#388E3C")
         self.btn_capture.pack(pady=10)
 
@@ -81,7 +88,7 @@ class FaceAttendanceApp(ctk.CTk):
         self.ensure_directory()
         self.load_existing_encodings()
         
-        # --- Liveness Variables ---
+        # --- Variables ---
         self.cap = cv2.VideoCapture(0)
         self.blink_counter = 0
         self.is_real_person = False
@@ -105,6 +112,7 @@ class FaceAttendanceApp(ctk.CTk):
                     try:
                         encode = face_recognition.face_encodings(img_rgb)[0]
                         self.knownEncodings.append(encode)
+                        # Store the full filename base (e.g., "Rahul-101")
                         self.classNames.append(os.path.splitext(cl)[0])
                     except:
                         pass
@@ -112,14 +120,20 @@ class FaceAttendanceApp(ctk.CTk):
 
     def register_new_face(self):
         name = self.entry_name.get()
-        if not name:
-            self.status_label.configure(text="⚠ Name Required!", text_color="orange")
+        uid = self.entry_id.get() # Get ID
+
+        if not name or not uid:
+            self.status_label.configure(text="⚠ Name & ID Required!", text_color="orange")
             return
         if self.current_frame is None: return
 
-        file_path = f'{self.path}/{name}.jpg'
+        # Unique Filename: Name-ID.jpg
+        filename_base = f"{name}-{uid}"
+        file_path = f'{self.path}/{filename_base}.jpg'
+
+        # Check if this exact Name-ID combination already exists
         if os.path.exists(file_path):
-            self.status_label.configure(text="⚠ Already Exists!", text_color="orange")
+            self.status_label.configure(text="⚠ User Already Exists!", text_color="orange")
             return
 
         cv2.imwrite(file_path, self.current_frame)
@@ -127,15 +141,27 @@ class FaceAttendanceApp(ctk.CTk):
         try:
             new_encode = face_recognition.face_encodings(img_rgb)[0]
             self.knownEncodings.append(new_encode)
-            self.classNames.append(name)
-            self.status_label.configure(text=f"✔ Saved: {name}", text_color="green")
+            self.classNames.append(filename_base)
+            
+            self.status_label.configure(text=f"✔ Saved: {name} ({uid})", text_color="green")
             self.entry_name.delete(0, 'end')
+            self.entry_id.delete(0, 'end')
             winsound.Beep(2000, 200)
         except IndexError:
             os.remove(file_path)
             self.status_label.configure(text="⚠ Face Not Clear", text_color="red")
 
-    def process_attendance(self, name):
+    def process_attendance(self, filename_base):
+        # Extract Name and ID from filename (e.g., "Rahul-101")
+        try:
+            name_parts = filename_base.split('-')
+            name = name_parts[0]
+            # Handle cases where ID might contain hyphens or strictly take the last part
+            uid = name_parts[-1] if len(name_parts) > 1 else "Unknown"
+        except ValueError:
+            name = filename_base
+            uid = "Unknown"
+
         filename = 'attendance.csv'
         now = datetime.now()
         dtString = now.strftime('%H:%M:%S')
@@ -144,7 +170,8 @@ class FaceAttendanceApp(ctk.CTk):
         try:
             if not os.path.exists(filename):
                 with open(filename, 'w') as f:
-                    f.write('Name,Date,Entry_Time,Exit_Time\n')
+                    # Added ID to CSV Header
+                    f.write('Name,ID,Date,Entry_Time,Exit_Time\n')
             
             with open(filename, 'r') as f:
                 lines = f.readlines()
@@ -162,9 +189,10 @@ class FaceAttendanceApp(ctk.CTk):
         for line in lines:
             entry = line.strip().split(',')
             
-            if len(entry) >= 2 and entry[0] == name and entry[1] == dString:
+            # Match Logic: Must match Name, ID, and Date
+            if len(entry) >= 3 and entry[0] == name and entry[1] == uid and entry[2] == dString:
                 found_entry_today = True
-                entry_time_str = entry[2]
+                entry_time_str = entry[3]
                 try:
                     entry_time_obj = datetime.strptime(entry_time_str, '%H:%M:%S')
                     time_diff = now - entry_time_obj.replace(year=now.year, month=now.month, day=now.day)
@@ -173,11 +201,13 @@ class FaceAttendanceApp(ctk.CTk):
                     minutes_passed = 0
 
                 if minutes_passed >= MIN_MINUTES_BEFORE_EXIT:
-                    new_line = f"{entry[0]},{entry[1]},{entry[2]},{dtString}\n"
+                    # Update Exit Time (Column 5)
+                    new_line = f"{entry[0]},{entry[1]},{entry[2]},{entry[3]},{dtString}\n"
                     updated_lines.append(new_line)
-                    if len(entry) < 4 or entry[3] != dtString:
+                    # Check if exit time was already marked
+                    if len(entry) < 5 or entry[4].strip() == "":
                         action_taken = True
-                        status_msg = f"Exit Updated: {name}"
+                        status_msg = f"Exit: {name} ({uid})"
                         color = "#FF5252"
                 else:
                     updated_lines.append(line)
@@ -187,10 +217,11 @@ class FaceAttendanceApp(ctk.CTk):
                 updated_lines.append(line)
 
         if not found_entry_today:
-            new_line = f"{name},{dString},{dtString},\n"
+            # New Entry with ID
+            new_line = f"{name},{uid},{dString},{dtString},\n"
             updated_lines.append(new_line)
             action_taken = True
-            status_msg = f"Entry Marked: {name}"
+            status_msg = f"Entry: {name} ({uid})"
             color = "#00E676"
             sound_freq = 1500
 
@@ -211,12 +242,9 @@ class FaceAttendanceApp(ctk.CTk):
         self.log_box.insert("0.0", msg + "\n")
         self.log_box.configure(state="disabled")
 
-    # --- EAR CALCULATION FUNCTION ---
     def eye_aspect_ratio(self, eye):
-        # Vertical distance
         A = dist.euclidean(eye[1], eye[5])
         B = dist.euclidean(eye[2], eye[4])
-        # Horizontal distance
         C = dist.euclidean(eye[0], eye[3])
         ear = (A + B) / (2.0 * C)
         return ear
@@ -225,45 +253,36 @@ class FaceAttendanceApp(ctk.CTk):
         ret, frame = self.cap.read()
         if ret:
             imgS = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-            imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB) # RGB for face_recognition
+            imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
             
-            # --- BLINK DETECTION LOGIC (Using face_recognition landmarks) ---
             face_landmarks_list = face_recognition.face_landmarks(imgS)
-            
             liveness_status = "Waiting for Blink..."
-            liveness_color = (0, 0, 255) # Red
+            liveness_color = (0, 0, 255)
 
             for face_landmarks in face_landmarks_list:
                 leftEye = face_landmarks['left_eye']
                 rightEye = face_landmarks['right_eye']
-                
-                # EAR Calculate karo
                 leftEAR = self.eye_aspect_ratio(leftEye)
                 rightEAR = self.eye_aspect_ratio(rightEye)
-                
-                # Average EAR
                 avgEAR = (leftEAR + rightEAR) / 2.0
                 
-                # Agar EAR threshold se kam hai matlab aankh band hai
                 if avgEAR < EYE_ASPECT_RATIO_THRESHOLD:
                     self.blink_counter += 1
                 else:
-                    # Agar blink counter sufficient hai to valid maano
                     if self.blink_counter >= EYE_ASPECT_RATIO_CONSEC_FRAMES:
                         self.is_real_person = True
-                    self.blink_counter = 0 # Reset agar aankh khuli hai
+                    self.blink_counter = 0 
             
             if self.is_real_person:
-                liveness_status = "Liveness Verified!"
-                liveness_color = (0, 255, 0) # Green
+                liveness_status = "Verified!"
+                liveness_color = (0, 255, 0)
 
-            # --- FACE RECOGNITION START ---
             facesCurFrame = face_recognition.face_locations(imgS)
             encodesCurFrame = face_recognition.face_encodings(imgS, facesCurFrame)
 
             if not facesCurFrame:
                 self.status_label.configure(text="Scanning...", text_color="yellow")
-                self.is_real_person = False # Reset if face lost
+                self.is_real_person = False 
 
             for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
                 y1, x2, y2, x1 = faceLoc
@@ -277,16 +296,23 @@ class FaceAttendanceApp(ctk.CTk):
                 if len(faceDis) > 0:
                     matchIndex = np.argmin(faceDis)
                     if matches[matchIndex]:
-                        name = self.classNames[matchIndex].upper()
+                        # Here we get "Rahul-101"
+                        filename_base = self.classNames[matchIndex]
                         
+                        # Display only the Name part on screen
+                        try:
+                            disp_name = filename_base.split('-')[0].upper()
+                        except:
+                            disp_name = filename_base
+
                         box_color = (0, 255, 0) if self.is_real_person else (0, 0, 255)
                         cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
-                        cv2.putText(frame, name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
+                        cv2.putText(frame, disp_name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
                         
                         if self.is_real_person:
-                            self.process_attendance(name)
+                            self.process_attendance(filename_base)
                         else:
-                            self.status_label.configure(text=f"Blink Eyes: {name}", text_color="orange")
+                            self.status_label.configure(text=f"Blink: {disp_name}", text_color="orange")
                     else:
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
 

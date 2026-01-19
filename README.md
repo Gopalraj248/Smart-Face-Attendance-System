@@ -1,68 +1,68 @@
-# 📸 Smart Face Attendance System with Anti-Spoofing
+# 📸 Smart Face Attendance System (with Anti-Spoofing & Unique ID)
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![License](https://img.shields.io/badge/License-MIT-green) ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
-**An advanced AI-based desktop application for contactless biometric attendance, featuring real-time liveness detection to prevent spoofing attacks.**
+**An advanced AI-based desktop application for contactless biometric attendance. It features real-time liveness detection (Blink Check) and supports Unique IDs to handle duplicate names.**
 
 ---
 
 ## 📖 About The Project
 
-This project is a robust Face Attendance System built using Python. Unlike traditional systems, it incorporates a security layer against "Replay Attacks" (using photos or videos) by implementing **Liveness Detection (Blink Check / Random Action Challenge)**.
+This project is a robust Face Attendance System built using Python. It addresses two major issues in traditional face recognition systems:
+1.  **Spoofing:** Prevents users from marking attendance using photos/videos by implementing **Liveness Detection (Eye Blink Verification)**.
+2.  **Duplicate Names:** Uses a **Unique ID System** (Roll No. / Employee ID) to distinguish between different users with the same name.
 
-The system automatically marks **Entry Time** and **Exit Time** for registered users and maintains records in an Excel-compatible CSV file. It features a modern, dark-mode GUI built with **CustomTkinter**.
+The system automatically marks **Entry Time** and **Exit Time** and saves records in an Excel-compatible CSV file.
 
 ### Key Features ✨
 
-* **👤 Real-time Face Recognition:** High-accuracy recognition using the `dlib` library.
-* **🛡️ Anti-Spoofing Security:** Prevents attendance via photos/videos using active liveness checks (e.g., Blink detection or random actions like "Smile").
-* **🔄 Automatic Entry/Exit Logic:** Intelligently marks entry and exit times based on a time buffer (prevents duplicate entries).
-* **🖥️ Modern GUI:** Clean and professional dark-mode interface using `CustomTkinter`.
-* **🔊 Audio Feedback:** Sound alerts for successful attendance or errors.
-* **📊 CSV Reporting:** Automatically generates and updates daily attendance logs in CSV format.
+* **🆔 Unique ID Support:** Register users with `Name` + `Unique ID` (e.g., Rahul-101) to prevent data overwriting.
+* **🛡️ Anti-Spoofing Security:** Active Liveness Check using **Eye Aspect Ratio (EAR)**. Attendance is marked *only* after the user blinks.
+* **🔄 Smart Entry/Exit Logic:**
+    * **Entry:** Marked immediately upon verification.
+    * **Exit:** Marked if the user appears again after a set time interval (e.g., 1 minute).
+* **🖥️ Modern GUI:** built with **CustomTkinter** for a professional dark-mode look.
+* **📊 Automatic Reporting:** Generates a `attendance.csv` file with columns: `Name`, `ID`, `Date`, `Entry_Time`, `Exit_Time`.
+* **🔊 Audio Feedback:** Beep sounds for success and error alerts.
 
 ---
 
 ## ⚙️ Tech Stack
 
 * **Language:** Python 3.x
-* **GUI Framework:** CustomTkinter
-* **Core AI/ML:** OpenCV, face_recognition (dlib), NumPy
-* **Utilities:** Pillow (PIL), Winsound
+* **GUI:** CustomTkinter
+* **Core AI:** OpenCV, face_recognition (dlib), NumPy
+* **Math/Logic:** Scipy (for Euclidean distance calculation)
+* **Utils:** Winsound, Pillow (PIL)
 
 ---
 
 ## 📸 Screenshots
 
-*(Add your screenshots here. You can create a folder named 'assets' in your project, save images there, and link them below)*
+*(Place your screenshots in an 'assets' folder and link them here)*
 
-| Login Screen | Liveness Check |
+| User Registration (with ID) | Blink Verification |
 | :---: | :---: |
-| ![Login](assets/login_screenshot.png) | ![Action](assets/action_screenshot.png) |
+| ![Register](assets/register_screenshot.png) | ![Verify](assets/blink_screenshot.png) |
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these steps to set up the project locally.
-
 ### Prerequisites
-
-* Python 3.10 or higher installed.
-* **Visual Studio Build Tools** (C++ compiler) installed (Required for `dlib` on Windows).
+Ensure you have **Python 3.10+** installed. You also need C++ Build Tools (for dlib).
 
 ### Installation
 
-1.  **Clone the repository**
+1.  **Clone the Repository**
     ```bash
-    git clone [https://github.com/](https://github.com/)[gopalraj248]/[REPO_NAMESmart-Face-Attendance-System].git
-    cd [Smart-Face-Attendance-System]
+    git clone [https://github.com/YOUR_USERNAME/Smart-Face-Attendance-System.git](https://github.com/YOUR_USERNAME/Smart-Face-Attendance-System.git)
+    cd Smart-Face-Attendance-System
     ```
 
-2.  **Create a Virtual Environment (Recommended)**
+2.  **Create Virtual Environment**
     ```bash
     python -m venv venv
-    # Activate on Windows:
     venv\Scripts\activate
     ```
 
@@ -75,32 +75,35 @@ Follow these steps to set up the project locally.
 
 ## 💡 How to Use
 
-1.  Run the main application file:
+1.  **Run the Application:**
     ```bash
     python main.py
     ```
 
 2.  **Register a New User:**
-    * Go to the "Add New User" section in the right panel.
-    * Enter the person's name.
-    * Click **"📸 Save Face"**. The system will capture and save the encoding.
+    * Enter **Name** (e.g., Gopal).
+    * Enter **Unique ID** (e.g., 101).
+    * Click **"📸 Save Face"**.
+    * *Note: This saves the file as `Gopal-101.jpg`.*
 
-3.  **Mark Attendance (Automatic Mode):**
-    * Just stand in front of the camera.
-    * Follow the instructions on the screen (e.g., "Please Blink" or "Smile").
-    * Once verified, the system will mark **Entry** (Green) or **Exit** (Red) automatically with a sound alert.
+3.  **Mark Attendance:**
+    * Look at the camera.
+    * The system will show **"Waiting for Blink..."**.
+    * **Blink your eyes** naturally.
+    * Upon verification, the system will beep and mark **Entry (Green)**.
+    * If you appear again after 1 minute, it will mark **Exit (Red)**.
 
-4.  **Check Logs:**
-    * Attendance is shown in the live log box.
-    * A permanent record is saved in `attendance.csv` in the project root.
+4.  **View Records:**
+    * Open `attendance.csv` in Excel to see the logs.
+    * **⚠ Important:** Always close the Excel file before running the app to avoid permission errors.
 
 ---
 
 ## 📂 Project Structure
 
 ```text
-├── images/                # Stores user face images for registration
-├── main.py                # Main application script (GUI & Logic)
-├── attendance.csv         # Daily attendance records (auto-generated)
-├── requirements.txt       # List of python dependencies
-└── README.md              # Project documentation
+├── images/                # Database of user faces (Name-ID.jpg)
+├── main.py                # Main source code
+├── attendance.csv         # Attendance Log (Auto-generated)
+├── requirements.txt       # Python dependencies
+└── README.md              # Project Documentation
