@@ -33,6 +33,8 @@ The system automatically logs **Entry & Exit Time** in an Excel-compatible CSV f
 | :---: | :---: |
 | ![Locked Mode](screenshots/locked.png) | ![Verified Mode](screenshots/verified.jpg) |
 
+*(Note: Ensure you have `locked.png` and `verified.jpg` in your screenshots folder)*
+
 ---
 
 ## ⚙️ Tech Stack
