@@ -11,6 +11,13 @@ import pickle
 import time
 from scipy.spatial import distance as dist
 
+# --- LOAD ENVIRONMENT VARIABLES (.env) ---
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # --- SAFE AUDIO HELPER (Cross-Platform) ---
 def play_beep(freq, duration):
     try:
@@ -23,15 +30,16 @@ def play_beep(freq, duration):
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
-# --- SETTINGS ---
-MIN_MINUTES_BEFORE_EXIT = 1 
-EYE_ASPECT_RATIO_THRESHOLD = 0.30 
-EYE_ASPECT_RATIO_CONSEC_FRAMES = 2 
-FEEDBACK_DURATION = 40  # approx 2 seconds overlay
-FRAME_PROCESS_INTERVAL = 2  # Process AI every 2nd frame for smooth 30+ FPS video
-CACHE_FILE = 'encodings_cache.pkl'
-PUNCH_COOLDOWN_SECONDS = 8  # Prevents rapid repeated punches for the same user
-ADMIN_PIN = "1234"  # Default Admin PIN to protect records & user enrollment
+# --- SETTINGS (Loaded dynamically from .env with safe defaults) ---
+ADMIN_PIN = os.getenv("ADMIN_PIN", "1234")
+CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", "0"))
+MIN_MINUTES_BEFORE_EXIT = float(os.getenv("MIN_MINUTES_BEFORE_EXIT", "1"))
+EYE_ASPECT_RATIO_THRESHOLD = float(os.getenv("EYE_ASPECT_RATIO_THRESHOLD", "0.30"))
+EYE_ASPECT_RATIO_CONSEC_FRAMES = int(os.getenv("EYE_ASPECT_RATIO_CONSEC_FRAMES", "2"))
+FEEDBACK_DURATION = int(os.getenv("FEEDBACK_DURATION", "40"))
+FRAME_PROCESS_INTERVAL = int(os.getenv("FRAME_PROCESS_INTERVAL", "2"))
+CACHE_FILE = os.getenv("CACHE_FILE", "encodings_cache.pkl")
+PUNCH_COOLDOWN_SECONDS = int(os.getenv("PUNCH_COOLDOWN_SECONDS", "8"))
 
 class FaceAttendanceApp(ctk.CTk):
     def __init__(self):
@@ -290,7 +298,7 @@ class FaceAttendanceApp(ctk.CTk):
         self.ensure_directory()
         self.load_existing_encodings()
         
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.update_camera()
 
     def ensure_directory(self):

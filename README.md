@@ -77,6 +77,13 @@ The system automatically logs **Entry & Exit Time** in an Excel-compatible CSV f
     pip install -r requirements.txt
     ```
 
+4.  **Configure Environment (.env)**
+    ```bash
+    # Windows:
+    copy .env.example .env
+    ```
+    *Open `.env` and configure your `ADMIN_PIN` (default: 1234), `CAMERA_INDEX` (default: 0), etc.*
+
 ---
 
 ## 💡 How to Use
