@@ -1,9 +1,9 @@
 ![Gopal_101_11-36-59](https://github.com/user-attachments/assets/f8d447db-2d47-4c8f-baa8-0866c69acecf)
-# 📸 Smart Face Attendance System (Privacy-First V2.0)
+# 📸 Smart Face Attendance System (Privacy-First V2.1)
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![License](https://img.shields.io/badge/License-MIT-green) ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
-**An advanced AI-based desktop application for contactless biometric attendance. It features "Privacy Mode" (Hidden Identity), real-time Liveness Detection (Anti-Spoofing), and Unique ID support.**
+**An advanced AI-based desktop application for contactless biometric attendance. It features "Privacy Mode" (Hidden Identity), real-time Liveness Detection (Anti-Spoofing), high-speed encoding cache, smooth 30+ FPS camera feed, and Unique ID support.**
 
 ---
 
@@ -11,8 +11,9 @@
 
 This project resolves major security and privacy flaws found in traditional face recognition systems.
 1.  **🔒 Privacy First:** User identity (Name/ID) remains **HIDDEN** (Red Box) until the user is verified.
-2.  **🛡️ Anti-Spoofing:** Prevents attendance via photos/videos using **Eye Blink Verification**.
-3.  **🆔 Unique IDs:** Handles duplicate names (e.g., `Rahul-101` vs `Rahul-102`) using a unique ID logic.
+2.  **🛡️ Anti-Spoofing (Per-User Isolation):** Prevents attendance via photos/videos using **Individual Eye Blink Verification** (eliminating multi-person spoofing flaws).
+3.  **⚡ Instant Startup & High FPS:** Utilizes an intelligent pickle cache to launch instantly and 2-frame processing intervals for a smooth 30+ FPS webcam experience.
+4.  **🆔 Unique IDs & Clean Names:** Seamlessly handles multi-word/hyphenated names (e.g., `Gopal Rajbhar-101`) with unique IDs.
 
 The system automatically logs **Entry & Exit Time** in an Excel-compatible CSV file and captures a screenshot upon successful verification.
 
@@ -20,11 +21,13 @@ The system automatically logs **Entry & Exit Time** in an Excel-compatible CSV f
 
 ## ✨ Key Features
 
-* **Privacy Mode:** The interface shows "LOCKED" or no name until the user passes the liveness check.
+* **Privacy Mode:** The interface shows a red locked bounding box with no name until the user passes the eye-blink liveness check.
+* **Per-Face Liveness Verification:** Isolated liveness tracking so static photos held alongside real people cannot trick the system.
 * **Live Feedback Banner:** Displays `Name | ID | Time` on a green banner instantly after verification.
-* **Auto-Screenshot:** Saves a proof-of-attendance image in the `screenshots` folder.
-* **Smart Logging:** Prevents spam entries (minimum 1-minute interval between Entry/Exit).
-* **Modern UI:** Built with **CustomTkinter** for a clean, dark-mode experience.
+* **Auto-Screenshot Proof:** Saves a proof-of-attendance image with embedded timestamped banner in the `screenshots` folder.
+* **Smart Logging & Cooldown:** Prevents spam entries (minimum 1-minute interval between Entry/Exit, with 8-second punch debouncing).
+* **Admin PIN Security:** Protects user enrollment and full attendance records behind an Admin PIN (Default: `1234`), keeping the attendance screen secure for public kiosk use.
+* **Modern UI:** Built with **CustomTkinter** with clean Tabview navigation and clean window exit handling.
 
 ---
 
